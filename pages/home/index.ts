@@ -1,156 +1,89 @@
-// pages/home/index.ts
-
 interface ICategory {
-  id: string;
+  id: number;
   name: string;
   iconClass: string;
 }
 
 interface ITool {
-  id: string;
+  id: number;
   name: string;
   desc: string;
   iconColor: string;
-  path?: string;
-  isHot?: boolean;
-  category: string; // 归属分类
-  iconType: string; // 图标渲染类型
+  iconType: string;
 }
 
-Page({
-  data: {
-    categories: [
-      { id: 'img', name: '图片处理', iconClass: 'icon-img' },
-      { id: 'text', name: '提示公告', iconClass: 'icon-text' },
-      { id: 'color', name: '还没做好', iconClass: 'icon-color' },
-      { id: 'layout', name: '还没做好', iconClass: 'icon-layout' }
-    ] as ICategory[],
+interface IHomeData {
+  categories: ICategory[];
+  activeCategory: number;
+  recentTools: ITool[];
+  showAllTools: boolean;
+}
 
-    allTools: [ // 原始完整列表
-      {
-        id: 'grid-poster',
-        name: '工作日报生成',
-        desc: '上传现场工作照，自动生成工作日报！',
-        iconColor: '#F2F2F7', // 修改为与其他一致的浅灰
-        path: '/pages/index/index',
-        category: 'img',
-        iconType: 'grid'
-      },
-      {
-        id: 'newlywed-collage',
-        name: '新婚业主拼图',
-        desc: '上传新婚照片，自动生成拼图！',
-        iconColor: '#F2F2F7',
-        category: 'img',
-        iconType: 'img'
-      },
-      {
-        id: 'color-palette',
-        name: '神秘新功能',
-        desc: '更多实用的新功能开发中，请不要期待！',
-        iconColor: '#F2F2F7',
-        category: 'text',
-        iconType: 'mystery'
-      },
-      {
-        id: 'qr-beautify',
-        name: '神秘新功能',
-        desc: '更多实用的新功能开发中，请不要期待！',
-        iconColor: '#F2F2F7',
-        category: 'layout',
-        iconType: 'mystery'
-      },
-      {
-        id: 'mystery-tool',
-        name: '神秘新功能',
-        desc: '更多实用的新功能开发中，请不要期待！',
-        iconColor: '#F2F2F7',
-        category: 'color',
-        iconType: 'mystery'
-      }
-    ] as ITool[],
-    recentTools: [] as ITool[], // 实际渲染的过滤列表
-    showAllTools: false,
-    navTop: 0,
-    navHeight: 0
+Page<IHomeData, WechatMiniprogram.Page.ICustomInstanceMethods> ({
+  data: {
+    activeCategory: 1,
+    showAllTools: false, // 默认不展开
+    categories: [
+      { id: 1, name: '灵感写作', iconClass: 'icon-quill' },
+      { id: 2, name: '趣味图片', iconClass: 'icon-image' },
+      { id: 3, name: '便捷生活', iconClass: 'icon-leaf' },
+      { id: 4, name: '开发者', iconClass: 'icon-code' },
+    ],
+    recentTools: [
+      { id: 1, name: '工作日报生成', desc: '上传现场工作照，自动生成工作日报！', iconColor: '#FFF4E5', iconType: 'icon-document' },
+      { id: 2, name: 'AI 项目起名', desc: '给你的新项目想一个好名字', iconColor: '#E6F7FF', iconType: 'icon-bulb' },
+      { id: 3, name: '周末做什么', desc: '不知道玩什么？帮你做个决定', iconColor: '#E6F7FF', iconType: 'icon-game' },
+      { id: 4, name: '今天吃什么', desc: '解决你的每日灵魂拷问', iconColor: '#F0F5FF', iconType: 'icon-food' },
+      { id: 5, name: '名词解释', desc: '快速了解某个专业名词的含义', iconColor: '#E6F7FF', iconType: 'icon-book' },
+      { id: 6, name: '小红书标题', desc: '一键生成小红书风格的标题', iconColor: '#FFF0F5', iconType: 'icon-flower' }
+    ]
   },
 
   onLoad() {
-    const rect = wx.getMenuButtonBoundingClientRect();
-    this.setData({
-      navTop: rect.top,
-      navHeight: rect.height,
-      recentTools: this.data.allTools // 初始显示全部
-    });
+    // 页面加载
   },
 
-  // 分类点击筛选
+  /**
+   * @description 切换激活的分类
+   * @param e 
+   */
   onCategoryTap(e: WechatMiniprogram.TouchEvent) {
     const { id } = e.currentTarget.dataset;
-    const { allTools } = this.data;
-    
-    // 触觉反馈
-    wx.vibrateShort({ type: 'light' });
-
-    let filtered = allTools;
-    if (id !== 'all') {
-      filtered = allTools.filter(t => t.category === id);
-    }
-
     this.setData({
       activeCategory: id,
-      recentTools: filtered,
-      showAllTools: true // 筛选时自动展开
     });
   },
 
-  // 展开/收起全部工具
+  /**
+   * @description 展开/收起全部工具
+   */
   onAllToolsTap() {
-    const isExpanding = !this.data.showAllTools;
-    
-    if (!isExpanding) {
-      // 在 scroll-view 模式下，我们直接利用 scroll-top 属性或者 pageScrollTo (会自动寻找最近的滚动容器)
-      wx.pageScrollTo({
-        selector: '.list-section',
-        duration: 400,
-      });
-      
-      setTimeout(() => {
-        this.setData({ showAllTools: false });
-      }, 50);
-    } else {
-      this.setData({ showAllTools: true });
-    }
+    this.setData({
+      showAllTools: !this.data.showAllTools,
+    });
   },
 
-  // 顶部大卡片点击：跳转到核心工具
-  onHeroTap() {
-    wx.navigateTo({ url: '/pages/index/index' });
-  },
-
-  // 分类点击
-  onCategoryTap(e: WechatMiniprogram.TouchEvent) {
-    const { id, name } = e.currentTarget.dataset;
-    wx.showToast({ title: `开发中: ${name}`, icon: 'none' });
-  },
-
-  // 工具列表点击
+  /**
+   * @description 点击某个具体的工具
+   * @param e 
+   */
   onToolTap(e: WechatMiniprogram.TouchEvent) {
-    const item = e.currentTarget.dataset.item as ITool;
-    if (item.path) {
-      wx.navigateTo({ url: item.path });
-    } else {
-      wx.showToast({ title: '即将上线，敬请期待', icon: 'none' });
-    }
+    const { item } = e.currentTarget.dataset as { item: ITool };
+    wx.showToast({
+      title: `即将打开: ${item.name}`,
+      icon: 'none'
+    });
+    // 后续可接入页面跳转
+    // wx.navigateTo({ url: `/pages/tool-detail/index?id=${item.id}` });
   },
 
-  // ======================================
-  // 核心：分享与转发配置
-  // ======================================
-  onShareAppMessage() {
-    return {
-      title: '阿茶工具集',
-      path: '/pages/home/index'
-    };
+  /**
+   * @description 点击置顶推荐卡片
+   */
+  onHeroTap() {
+    wx.showToast({
+      title: '即将打开: 工作日报生成',
+      icon: 'none'
+    })
   }
 });
