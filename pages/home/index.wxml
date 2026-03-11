@@ -1,0 +1,123 @@
+<!-- pages/home/index.wxml -->
+<scroll-view 
+  class="scroll-wrapper" 
+  scroll-y="{{true}}" 
+  enhanced="{{false}}" 
+  show-scrollbar="{{false}}"
+  fast-deceleration="{{true}}"
+>
+  <view class="page-container">
+    <!-- 头部区域：使用 padding-top 确保容器起始点与胶囊顶部对齐 -->
+    <view class="header-section" style="padding-top: {{navTop}}px;">
+      <view class="headline">探索你的<text class="highlight">灵感工具箱</text></view>
+    </view>
+
+    <!-- 焦点推荐 -->
+    <view class="hero-bento" hover-class="card-hover" bindtap="onHeroTap">
+      <view class="hero-bg-pattern"></view>
+      <view class="hero-content">
+        <view class="tag-featured">TOP PICK</view>
+        <text class="hero-title">工作日报生成</text>
+        <text class="hero-desc">上传现场工作照，自动生成工作日报！</text>
+      </view>
+      <view class="hero-visual">
+        <view class="mini-grid-preview">
+          <view class="m-grid-item" wx:for="{{9}}" wx:key="*this"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 快捷功能矩阵：实装点击筛选与激活态 -->
+    <view class="category-matrix">
+      <view 
+        class="matrix-item {{activeCategory === item.id ? 'active' : ''}}" 
+        wx:for="{{categories}}" 
+        wx:key="id"
+        hover-class="card-hover"
+        bindtap="onCategoryTap"
+        data-id="{{item.id}}"
+      >
+        <view class="icon-circle">
+          <view class="css-icon {{item.iconClass}}"></view>
+        </view>
+        <text class="item-name">{{item.name}}</text>
+      </view>
+    </view>
+
+    <!-- 工具列表 -->
+    <view class="list-section">
+      <view class="section-header">
+        <text class="section-title">工具目录</text>
+      </view>
+      
+      <view class="tool-list">
+        <!-- 始终显示的前 4 个工具 -->
+        <view
+          class="tool-card"
+          wx:for="{{recentTools}}"
+          wx:key="id"
+          wx:if="{{index < 4}}"
+          hover-class="card-hover"
+          bindtap="onToolTap"
+          data-item="{{item}}"
+        >
+          <view class="tool-icon-box" style="background-color: {{item.iconColor}}">
+             <!-- 使用高审美动态图标 -->
+             <view class="dynamic-icon {{item.iconType}}"></view>
+          </view>
+          <view class="tool-info">
+            <view class="tool-name-row">
+              <text class="tool-name">{{item.name}}</text>
+            </view>
+            <text class="tool-desc">{{item.desc}}</text>
+          </view>
+          <view class="chevron-right"></view>
+        </view>
+
+        <!-- 优雅折叠容器 -->
+        <view class="expandable-container {{showAllTools ? 'is-expanded' : ''}}">
+          <view
+            class="tool-card extra-card"
+            wx:for="{{recentTools}}"
+            wx:key="id"
+            wx:if="{{index >= 4}}"
+            hover-class="card-hover"
+            bindtap="onToolTap"
+            data-item="{{item}}"
+          >
+            <view class="tool-icon-box" style="background-color: {{item.iconColor}}">
+               <view class="dynamic-icon {{item.iconType}}"></view>
+            </view>
+            <view class="tool-info">
+              <view class="tool-name-row">
+                <text class="tool-name">{{item.name}}</text>
+              </view>
+              <text class="tool-desc">{{item.desc}}</text>
+            </view>
+            <view class="chevron-right"></view>
+          </view>
+        </view>
+
+        <!-- 动作卡片：仅在工具数量超过 4 个时才显示“展开/收起” -->
+        <view 
+          class="more-action-card {{showAllTools ? 'is-collapse' : ''}}" 
+          hover-class="action-hover" 
+          bindtap="onAllToolsTap"
+          wx:if="{{recentTools.length > 4}}"
+        >          <view class="action-content">
+            <view class="action-icon">
+              <view class="dot"></view><view class="dot"></view><view class="dot"></view>
+            </view>
+            <text class="action-text">{{showAllTools ? '收起' : '查看全部'}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 极简页脚版权信息 -->
+    <view class="footer-copyright">
+      <text class="brand-name">阿茶工具集 V2.0.0</text>
+      <text class="author-info">© 2026 关新宇 · 问题反馈微信: Ggchall</text>
+    </view>
+  </view>
+</scroll-view>

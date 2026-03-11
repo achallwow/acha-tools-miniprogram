@@ -1,0 +1,55 @@
+/* 根节点基础配置，只做最基础的全屏和背景色 */
+page {
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  background-color: #f8f8f8 !important; /* 强制锁定全局背景色为苹果灰，消灭白屏闪烁 */
+  color: var(--text-black, #1D1D1F);
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+
+  /* 全局颜色变量 (浅色模式默认) */
+  --primary-color: #08C667;
+  --bg-color: #ffffff;
+  --bg-gray: #f8f8f8;
+  --text-black: #1D1D1F;
+  --text-gray-dark: #666666;
+  --text-gray-mid: #999999;
+  --text-gray-light: #cccccc;
+  --border-color: #eeeeee;
+  --tabbar-bg: rgba(255, 255, 255, 0.75);
+  --tabbar-border: rgba(255, 255, 255, 0.5);
+}
+
+/* 终极隐藏滚动条方案：兼容所有内核与模拟器 */
+::-webkit-scrollbar,
+scroll-view ::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  color: transparent !important;
+  background: transparent !important;
+}
+
+/* 针对 Firefox 和新版 Edge 的特殊处理 */
+page {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* 
+ * 核心全局布局规范 (由架构师强制锁定)
+ * 作用：确保所有采用自定义导航栏的页面，其顶部内容始终避开系统状态栏（刘海/灵动岛），
+ * 并且拥有统一的基础向下位移留白。
+ * 用法：在每个页面的根 <view> 标签上添加 class="global-page-container"
+ */
+.global-page-container {
+  min-height: 100vh;
+  /* 
+   * env(safe-area-inset-top) 会自动获取设备的状态栏高度
+   * 这里根据要求调整为 88rpx（增加高度使内容往下沉）
+   */
+  padding-top: calc(env(safe-area-inset-top) + 88rpx);
+  box-sizing: border-box;
+}
