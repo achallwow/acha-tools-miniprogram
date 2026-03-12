@@ -1,89 +1,108 @@
-interface ICategory {
-  id: number;
-  name: string;
-  iconClass: string;
-}
+// pages/home/index.ts
+// 首页 - 工具导航入口
 
-interface ITool {
-  id: number;
-  name: string;
-  desc: string;
-  iconColor: string;
-  iconType: string;
-}
+import { CATEGORIES, TOOLS, SHARE_CONFIG, APP_INFO } from '../../constants/index';
+import type { Category, Tool, HomePageData } from '../../types/index';
 
-interface IHomeData {
-  categories: ICategory[];
-  activeCategory: number;
-  recentTools: ITool[];
-  showAllTools: boolean;
-}
-
-Page<IHomeData, WechatMiniprogram.Page.ICustomInstanceMethods> ({
+Page({
   data: {
-    activeCategory: 1,
-    showAllTools: false, // 默认不展开
-    categories: [
-      { id: 1, name: '灵感写作', iconClass: 'icon-quill' },
-      { id: 2, name: '趣味图片', iconClass: 'icon-image' },
-      { id: 3, name: '便捷生活', iconClass: 'icon-leaf' },
-      { id: 4, name: '开发者', iconClass: 'icon-code' },
-    ],
-    recentTools: [
-      { id: 1, name: '工作日报生成', desc: '上传现场工作照，自动生成工作日报！', iconColor: '#FFF4E5', iconType: 'icon-document' },
-      { id: 2, name: 'AI 项目起名', desc: '给你的新项目想一个好名字', iconColor: '#E6F7FF', iconType: 'icon-bulb' },
-      { id: 3, name: '周末做什么', desc: '不知道玩什么？帮你做个决定', iconColor: '#E6F7FF', iconType: 'icon-game' },
-      { id: 4, name: '今天吃什么', desc: '解决你的每日灵魂拷问', iconColor: '#F0F5FF', iconType: 'icon-food' },
-      { id: 5, name: '名词解释', desc: '快速了解某个专业名词的含义', iconColor: '#E6F7FF', iconType: 'icon-book' },
-      { id: 6, name: '小红书标题', desc: '一键生成小红书风格的标题', iconColor: '#FFF0F5', iconType: 'icon-flower' }
-    ]
-  },
+    categories: CATEGORIES as Category[],
+    allTools: TOOLS as Tool[],
+    recentTools: [] as Tool[],
+    showAllTools: false,
+    navTop: 0,
+    navHeight: 0,
+    activeCategory: ''
+  } as HomePageData,
 
   onLoad() {
-    // 页面加载
+    const rect = wx.getMenuButtonBoundingClientRect();
+    this.setData({
+      navTop: rect.top,
+      navHeight: rect.height,
+      recentTools: this.data.allTools
+    });
   },
 
   /**
-   * @description 切换激活的分类
-   * @param e 
+   * 分类点击处理
+   * 点击分类后筛选并显示对应类型的工具
    */
   onCategoryTap(e: WechatMiniprogram.TouchEvent) {
-    const { id } = e.currentTarget.dataset;
+    const { id, name } = e.currentTarget.dataset;
+    const { allTools } = this.data;
+
+    // 触觉反馈
+    wx.vibrateShort({ type: 'light' });
+
+    // 未实装的分类显示提示
+    const unimplementedCategories = ['text', 'color', 'layout'];
+    if (unimplementedCategories.includes(id)) {
+      wx.showToast({ title: `开发中: ${name}`, icon: 'none' });
+      return;
+    }
+
+    // 执行筛选
+    let filtered = allTools;
+    if (id !== 'all') {
+      filtered = allTools.filter((t) => t.category === id);
+    }
+
     this.setData({
       activeCategory: id,
+      recentTools: filtered,
+      showAllTools: true
     });
   },
 
   /**
-   * @description 展开/收起全部工具
+   * 展开/收起全部工具
    */
   onAllToolsTap() {
-    this.setData({
-      showAllTools: !this.data.showAllTools,
-    });
+    const isExpanding = !this.data.showAllTools;
+
+    if (!isExpanding) {
+      // 收起时滚动到列表区域
+      wx.pageScrollTo({
+        selector: '.list-section',
+        duration: 400
+      });
+
+      setTimeout(() => {
+        this.setData({ showAllTools: false });
+      }, 50);
+    } else {
+      this.setData({ showAllTools: true });
+    }
   },
 
   /**
-   * @description 点击某个具体的工具
-   * @param e 
-   */
-  onToolTap(e: WechatMiniprogram.TouchEvent) {
-    const { item } = e.currentTarget.dataset as { item: ITool };
-    wx.showToast({
-      title: `即将打开: ${item.name}`,
-      icon: 'none'
-    });
-    // 后续可接入页面跳转
-    // wx.navigateTo({ url: `/pages/tool-detail/index?id=${item.id}` });
-  },
-
-  /**
-   * @description 点击置顶推荐卡片
+   * Hero卡片点击 - 跳转到核心工具
    */
   onHeroTap() {
-    wx.showToast({
-      title: '即将打开: 工作日报生成',
-      icon: 'none'
-    })
+    wx.navigateTo({ url: '/pages/index/index' });
+  },
+
+  /**
+   * 工具列表项点击
+   */
+  onToolTap(e: WechatMiniprogram.TouchEvent) {
+    const item = e.currentTarget.dataset.item as Tool;
+
+    if (item.path) {
+      wx.navigateTo({ url: item.path });
+    } else {
+      wx.showToast({ title: '即将上线，敬请期待', icon: 'none' });
+    }
+  },
+
+  /**
+   * 分享配置
+   */
+  onShareAppMessage() {
+    return {
+      title: SHARE_CONFIG.title,
+      path: SHARE_CONFIG.path
+    };
   }
 });

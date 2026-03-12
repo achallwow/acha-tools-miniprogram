@@ -6,9 +6,9 @@
   show-scrollbar="{{false}}"
   fast-deceleration="{{true}}"
 >
-  <view class="global-page-container">
-    <!-- 头部区域：现在由 global-page-container 控制顶部间距 -->
-    <view class="header-section">
+  <view class="page-container">
+    <!-- 头部区域：使用 padding-top 确保容器起始点与胶囊顶部对齐 -->
+    <view class="header-section" style="padding-top: {{navTop}}px;">
       <view class="headline">探索你的<text class="highlight">灵感工具箱</text></view>
     </view>
 
