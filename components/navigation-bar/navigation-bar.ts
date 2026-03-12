@@ -78,7 +78,7 @@ Component({
    * 组件的方法列表
    */
   methods: {
-    _showChange(show) {
+    _showChange(show: boolean) {
       const animated = this.data.animated
       let displayStyle = ''
       if (animated) {

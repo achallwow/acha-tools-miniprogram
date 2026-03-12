@@ -1,95 +1,88 @@
 <!-- pages/index/index.wxml -->
-<scroll-view
-  class="scroll-wrapper"
-  scroll-y="{{!isDragging}}"
-  enhanced="{{false}}"
+<scroll-view 
+  class="scroll-wrapper" 
+  scroll-y="{{draggingIndex === -1}}" 
+  enhanced="{{false}}" 
   show-scrollbar="{{false}}"
   fast-deceleration="{{true}}"
 >
-  <view class="global-page-container">
-    <!-- 返回按钮 -->
-    <view
-      class="floating-back-btn"
-      bindtap="onBackTap"
+  <view class="global-page-container page-container">
+    <!-- 极简悬浮返回按钮 -->
+    <view 
+      class="floating-back-btn" 
+      bindtap="onBackTap" 
+      style="top: {{navTop}}px; width: {{navHeight}}px; height: {{navHeight}}px;"
     >
       <view class="back-icon"></view>
     </view>
 
     <view class="grid-box">
-      <!-- 标题区域 -->
+      <!-- 顶部标题区域 -->
       <view class="top-box">
-        <input
-          class="title-input"
+        <input 
+          class="title-input" 
           placeholder="输入标题"
-          value="{{title}}"
+          value="{{title}}" 
           bindinput="onTitleInput"
           maxlength="30"
         />
         <view class="date-text">{{currentDate}}</view>
       </view>
 
-      <!-- 九宫格 -->
-      <view class="grid-container">
-        <view
-          class="grid-slot"
-          wx:for="{{gridSlots}}"
-          wx:key="*this"
-          wx:for-item="slotNum"
-          data-slot="{{slotNum}}"
+      <!-- 【物理偏移版】iOS 级流体碰撞矩阵 -->
+      <view class="grid-items-wrapper" id="gridWrapper">
+        <view 
+          class="grid-item {{draggingIndex === index ? 'is-dragging-main' : ''}}" 
+          wx:for="{{gridItems}}" 
+          wx:key="id"
+          data-index="{{index}}"
+          style="transform: translate({{item.tx || 0}}px, {{item.ty || 0}}px); z-index: {{draggingIndex === index ? 999 : 1}};"
+          bindtouchstart="onDragStart"
+          catchtouchmove="onDragMove"
+          bindtouchend="onDragEnd"
+          bindtap="onGridItemTap"
         >
-          <!-- 找到对应 slot 的 item -->
-          <block wx:for="{{gridItems}}" wx:key="id" wx:for-item="item">
-            <view
-              wx:if="{{item.slot === slotNum}}"
-              class="grid-item {{isDragging && dragId === item.id ? 'dragging' : ''}}"
-              data-index="{{slotNum}}"
+          <!-- 内部内容：如果是正在拖拽的主体，内部变空（去占位符化） -->
+          <view class="content-gate" wx:if="{{draggingIndex !== index}}">
+            <block wx:if="{{item.id === 'logo'}}">
+              <image 
+                wx:if="{{currentLogoIndex !== -1}}"
+                class="grid-image logo-image" 
+                src="{{logoList[currentLogoIndex]}}" 
+                mode="aspectFill"
+              ></image>
+              <view wx:else class="logo-placeholder">LOGO</view>
+            </block>
+
+            <block wx:else>
+              <image 
+                wx:if="{{item.src}}"
+                class="grid-image" 
+                src="{{item.src}}" 
+                mode="aspectFill"
+              ></image>
+              <view wx:else class="add-wrap">
+                <view class="add-icon">+</view>
+              </view>
+            </block>
+
+            <view 
+              wx:if="{{item.id !== 'logo' && item.src}}"
+              class="delete-btn" 
+              catchtap="deleteImage" 
               data-id="{{item.id}}"
-              bindtouchstart="onDragStart"
-              catchtouchmove="onDragMove"
-              catchtouchend="onDragEnd"
-              bindtap="onGridItemTap"
-            >
-              <!-- Logo 格子 -->
-              <block wx:if="{{item.id === 'logo'}}">
-                <image
-                  wx:if="{{currentLogoIndex !== -1}}"
-                  class="item-image"
-                  src="{{logoList[currentLogoIndex]}}"
-                  mode="aspectFill"
-                />
-                <view wx:else class="logo-text">LOGO</view>
-              </block>
-
-              <!-- 普通格子 -->
-              <block wx:else>
-                <image
-                  wx:if="{{item.src}}"
-                  class="item-image"
-                  src="{{item.src}}"
-                  mode="aspectFill"
-                />
-                <view wx:else class="add-icon">+</view>
-
-                <!-- 删除按钮 -->
-                <view
-                  wx:if="{{item.src}}"
-                  class="delete-btn"
-                  catchtap="deleteImage"
-                  data-id="{{item.id}}"
-                >×</view>
-              </block>
-            </view>
-          </block>
+            >×</view>
+          </view>
         </view>
-      </view>
 
-      <!-- 拖拽时的跟随元素 -->
-      <view
-        wx:if="{{isDragging}}"
-        class="drag-ghost"
-        style="left: {{dragX}}px; top: {{dragY}}px;"
-      >
-        <image src="{{dragSrc}}" mode="aspectFill"/>
+        <!-- 【镜像层】绝对跟随手指 -->
+        <view 
+          class="drag-ghost" 
+          wx:if="{{draggingIndex !== -1}}" 
+          style="left: {{ghostX}}px; top: {{ghostY}}px;"
+        >
+          <image src="{{ghostSrc}}" mode="aspectFill"></image>
+        </view>
       </view>
 
       <view class="bottom-slogan">专注您的生活</view>
@@ -100,31 +93,29 @@
       <text class="brand-signature">VANSUN</text>
     </view>
 
-    <!-- 按钮 -->
     <view class="btn-box">
-      <button bindtap="chooseMultipleImages" class="action-btn secondary" disabled="{{!hasEmptySlot}}">多选</button>
+      <button bindtap="chooseImages" class="action-btn secondary" disabled="{{!hasEmptySlot}}">多选</button>
       <button bindtap="saveGridImage" class="action-btn">保存</button>
     </view>
 
-    <!-- Logo 选择器 -->
     <view class="logo-picker-mask" wx:if="{{showLogoPicker}}" catchtap="closeLogoPicker">
       <view class="logo-picker-content" catchtap="noop">
         <view class="picker-title">选择Logo</view>
         <view class="logo-list">
-          <view
+          <view 
             class="logo-item {{currentLogoIndex === index ? 'active' : ''}}"
             wx:for="{{logoList}}"
             wx:key="index"
             data-logo-index="{{index}}"
             bindtap="selectLogo"
           >
-            <image src="{{item}}" mode="aspectFill"/>
+            <image src="{{item}}" mode="aspectFill"></image>
           </view>
         </view>
         <view class="picker-close" bindtap="closeLogoPicker">关闭</view>
       </view>
     </view>
 
-    <canvas type="2d" id="gridCanvas" class="canvas-hide"/>
+    <canvas type="2d" id="gridCanvas" class="canvas-hide"></canvas>
   </view>
 </scroll-view>

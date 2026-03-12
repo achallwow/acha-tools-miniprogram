@@ -116,70 +116,36 @@
   box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.02); 
 }
 
-/* 九宫格排版网格 - 使用 CSS Grid 固定布局 */
-.grid-container {
+/* 九宫格排版网格 */
+.grid-items-wrapper {
   width: 100%;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: 4rpx;
-  aspect-ratio: 1 / 1;
+  margin-top: 0;
   position: relative;
 }
 
-/* 格子容器 */
-.grid-slot {
-  width: 100%;
-  height: 100%;
-  background-color: ~"var(--bg-gray)";
-  position: relative;
-}
-
-/* 格子项 */
 .grid-item {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
+  width: calc((100% - 8rpx) / 3); 
+  aspect-ratio: 1 / 1;
+  background-color: ~"var(--bg-gray)"; 
+  border-radius: 0; 
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  overflow: visible;
+  box-sizing: border-box;
+  position: relative;
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease;
 
-  &.dragging {
-    opacity: 0.3;
+  &.is-placeholder {
+    opacity: 0.15;
   }
-
-  &:active {
-    transform: scale(0.98);
-  }
 }
 
-/* 图片 */
-.item-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Logo 占位 */
-.logo-text {
-  font-size: 22rpx;
-  color: @text-gray-mid;
-  font-weight: 800;
-  letter-spacing: 4rpx;
-}
-
-/* 添加图标 */
-.add-icon {
-  font-size: 40rpx;
-  color: @text-gray-mid;
-  font-weight: 300;
-}
-
-/* 拖拽幽灵元素 */
+/* iOS 级镜像悬浮块 */
 .drag-ghost {
   position: fixed;
   width: 205rpx;
@@ -187,15 +153,53 @@
   z-index: 9999;
   pointer-events: none;
   background-color: #fff;
-  border-radius: 8rpx;
-  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-
+  box-shadow: 0 40rpx 100rpx rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
   image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
+}
+
+.grid-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.logo-image {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.logo-placeholder {
+  font-size: 22rpx;
+  color: @text-gray-mid;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 4rpx;
+}
+
+.add-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-icon {
+  font-size: 40rpx;
+  color: @text-gray-mid;
+  font-weight: 300;
 }
 
 .delete-btn {

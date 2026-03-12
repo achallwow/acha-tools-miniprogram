@@ -24,10 +24,7 @@
     "disableUseStrict": false,
     "condition": false,
     "swc": false,
-    "disableSWC": true,
-    "lessSetting": {
-      "commonUseFilePath": "app.less"
-    }
+    "disableSWC": true
   },
   "compileType": "miniprogram",
   "cloudfunctionRoot": "cloudfunctions/",
