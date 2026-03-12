@@ -6,12 +6,11 @@
   show-scrollbar="{{false}}"
   fast-deceleration="{{true}}"
 >
-  <view class="global-page-container page-container">
+  <view class="global-page-container">
     <!-- 返回按钮 -->
     <view
       class="floating-back-btn"
       bindtap="onBackTap"
-      style="top: {{navTop}}px; width: {{navHeight}}px; height: {{navHeight}}px;"
     >
       <view class="back-icon"></view>
     </view>

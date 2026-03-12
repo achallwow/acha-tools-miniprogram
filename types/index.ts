@@ -52,22 +52,16 @@ export interface IndexPageData {
   currentLogoIndex: number;
   showLogoPicker: boolean;
 
-  // 导航相关
-  navTop: number;
-  navHeight: number;
-
   // 网格相关
   gridItems: GridItem[];
-  slotRects: WechatMiniprogram.BoundingClientRectCallbackResult[];
+  gridSlots: number[];
 
   // 拖拽状态
-  draggingIndex: number;
-  ghostX: number;
-  ghostY: number;
-  ghostSrc: string;
-  touchStartX: number;
-  touchStartY: number;
-  isActuallyDragging: boolean;
+  isDragging: boolean;
+  dragId: string;
+  dragSrc: string;
+  dragX: number;
+  dragY: number;
   hasEmptySlot: boolean;
 }
 
@@ -77,8 +71,6 @@ export interface HomePageData {
   allTools: Tool[];
   recentTools: Tool[];
   showAllTools: boolean;
-  navTop: number;
-  navHeight: number;
   activeCategory?: string;
 }
 

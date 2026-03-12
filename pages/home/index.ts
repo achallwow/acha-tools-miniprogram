@@ -1,7 +1,7 @@
 // pages/home/index.ts
 // 首页 - 工具导航入口
 
-import { CATEGORIES, TOOLS, SHARE_CONFIG, APP_INFO } from '../../constants/index';
+import { CATEGORIES, TOOLS, SHARE_CONFIG } from '../../constants/index';
 import type { Category, Tool, HomePageData } from '../../types/index';
 
 Page({
@@ -10,16 +10,12 @@ Page({
     allTools: TOOLS as Tool[],
     recentTools: [] as Tool[],
     showAllTools: false,
-    navTop: 0,
-    navHeight: 0,
     activeCategory: ''
   } as HomePageData,
 
   onLoad() {
-    const rect = wx.getMenuButtonBoundingClientRect();
+    // 页面加载时，默认显示所有工具
     this.setData({
-      navTop: rect.top,
-      navHeight: rect.height,
       recentTools: this.data.allTools
     });
   },

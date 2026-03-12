@@ -48,8 +48,8 @@ page {
   min-height: 100vh;
   /* 
    * env(safe-area-inset-top) 会自动获取设备的状态栏高度
-   * 这里根据要求调整为 88rpx（增加高度使内容往下沉）
+   * 根据规范，全局统一的顶部内边距为 38rpx
    */
-  padding-top: calc(env(safe-area-inset-top) + 88rpx);
+  padding-top: calc(env(safe-area-inset-top) + 38rpx);
   box-sizing: border-box;
 }

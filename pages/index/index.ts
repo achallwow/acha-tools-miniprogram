@@ -17,17 +17,15 @@ import { formatDate } from '../../utils/date';
 import { checkAndAuthorizePhotosAlbum } from '../../services/permission';
 import { synthesizeImage, saveImageToAlbum, chooseImages, chooseSingleImage, initCanvas } from '../../services/imageSynthesis';
 import { fillImagesToGrid, removeImageById, setImageAtIndex, hasEmptySlots } from '../../services/dragEngine';
-import type { GridItem } from '../../types/index';
+import type { GridItem, IndexPageData } from '../../types/index';
 
-Page({
+Page<IndexPageData> ({
   data: {
     title: '',
     currentDate: '',
     logoList: LOGO_LIST as string[],
     currentLogoIndex: DEFAULT_LOGO_INDEX,
     showLogoPicker: false,
-    navTop: 0,
-    navHeight: 0,
     gridItems: JSON.parse(JSON.stringify(INITIAL_GRID_ITEMS)) as GridItem[],
     hasEmptySlot: true,
     gridSlots: [0, 1, 2, 3, 4, 5, 6, 7, 8],
@@ -38,6 +36,7 @@ Page({
     dragSrc: '',
     dragX: 0,
     dragY: 0,
+    // slotRects and other non-serializable data are managed outside of `data`
   },
 
   canvasContext: null as any,
@@ -48,7 +47,6 @@ Page({
   dragOffsetY: 0,
 
   onLoad() {
-    this.initNavigation();
     this.initDate();
     this.initCanvas();
     this.loadTemplate();
@@ -58,11 +56,6 @@ Page({
 
   onUnload() {
     this.saveTemplate();
-  },
-
-  initNavigation() {
-    const rect = wx.getMenuButtonBoundingClientRect();
-    this.setData({ navTop: rect.top, navHeight: rect.height });
   },
 
   initDate() {
@@ -115,16 +108,11 @@ Page({
   // ==================== 拖拽核心 ====================
 
   onDragStart(e: WechatMiniprogram.TouchEvent) {
-    // 获取 slot 值（0-8）
     const slot = e.currentTarget.dataset.index as number;
-
-    // 找到对应 slot 的 item
     const item = this.data.gridItems.find((it: GridItem) => it.slot === slot);
     if (!item || item.id === 'logo' || !item.src) return;
 
-    // 找到 item 在数组中的真实索引
     const itemIndex = this.data.gridItems.findIndex((it: GridItem) => it.id === item.id);
-
     const touch = e.touches[0];
     const rect = this.slotRects[slot];
     if (!rect) {
@@ -132,13 +120,11 @@ Page({
       return;
     }
 
-    // 记录拖拽信息
     this.dragItem = item;
     this.dragIndex = itemIndex;
     this.dragOffsetX = touch.clientX - rect.left;
     this.dragOffsetY = touch.clientY - rect.top;
 
-    // 显示拖拽元素
     this.setData({
       isDragging: true,
       dragId: item.id,
@@ -155,29 +141,24 @@ Page({
 
     const touch = e.touches[0];
 
-    // 更新拖拽元素位置（直接跟随手指）
     this.setData({
       dragX: touch.clientX - this.dragOffsetX,
       dragY: touch.clientY - this.dragOffsetY,
     });
 
-    // 检测在哪个格子上方
     this.checkSwap(touch.clientX, touch.clientY);
   },
 
-  // 节流：每 100ms 最多交换一次
   lastSwapTime: 0,
   checkSwap(touchX: number, touchY: number) {
     const now = Date.now();
     if (now - this.lastSwapTime < 100) return;
 
-    // 找到手指下方的格子索引（0-8）
     let targetSlot = -1;
     for (let i = 0; i < this.slotRects.length; i++) {
       const rect = this.slotRects[i];
       if (!rect) continue;
 
-      // 检查触摸点是否在格子内
       if (touchX >= rect.left && touchX <= rect.right &&
           touchY >= rect.top && touchY <= rect.bottom) {
         targetSlot = i;
@@ -185,42 +166,23 @@ Page({
       }
     }
 
-    // 无效目标
-    if (targetSlot === -1) return;
+    if (targetSlot === -1 || (this.dragItem && this.dragItem.slot === targetSlot) || targetSlot === 4) return;
 
-    // 不能拖到当前位置
-    if (this.dragItem && this.dragItem.slot === targetSlot) return;
-
-    // 不能拖到 Logo 位置（slot 4）
-    if (targetSlot === 4) return;
-
-    // 找到目标位置的 item
     const targetItem = this.data.gridItems.find((it: GridItem) => it.slot === targetSlot);
     if (!targetItem || targetItem.id === 'logo') return;
 
-    // 执行交换
     this.swapSlots(this.dragItem!.slot, targetSlot);
     this.lastSwapTime = now;
-
-    // 震动
     wx.vibrateShort({ type: 'light' });
   },
 
   swapSlots(fromSlot: number, toSlot: number) {
-    const items = this.data.gridItems;
-
-    // 交换两个格子的 slot 值
-    const newItems = items.map((item: GridItem) => {
-      if (item.slot === fromSlot) {
-        return { ...item, slot: toSlot };
-      }
-      if (item.slot === toSlot) {
-        return { ...item, slot: fromSlot };
-      }
+    const newItems = this.data.gridItems.map((item: GridItem) => {
+      if (item.slot === fromSlot) return { ...item, slot: toSlot };
+      if (item.slot === toSlot) return { ...item, slot: fromSlot };
       return item;
     });
 
-    // 更新被拖拽项的引用
     if (this.dragItem) {
       this.dragItem = { ...this.dragItem, slot: toSlot };
     }
@@ -230,16 +192,9 @@ Page({
 
   onDragEnd() {
     if (!this.data.isDragging) return;
-
-    this.setData({
-      isDragging: false,
-      dragId: '',
-      dragSrc: '',
-    });
-
+    this.setData({ isDragging: false, dragId: '', dragSrc: '' });
     this.dragItem = null;
     this.dragIndex = -1;
-
     this.checkSlots();
   },
 
@@ -251,11 +206,7 @@ Page({
 
   onGridItemTap(e: WechatMiniprogram.TouchEvent) {
     if (this.data.isDragging) return;
-
-    // 获取 slot 值（0-8）
     const slot = e.currentTarget.dataset.index as number;
-
-    // 找到对应 slot 的 item
     const item = this.data.gridItems.find((it: GridItem) => it.slot === slot);
     if (!item) return;
 
@@ -265,8 +216,6 @@ Page({
     }
 
     if (item.src) return;
-
-    // 找到 item 的数组索引
     const index = this.data.gridItems.findIndex((it: GridItem) => it.id === item.id);
     this.selectSingleImage(index);
   },

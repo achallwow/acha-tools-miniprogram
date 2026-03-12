@@ -1,7 +1,13 @@
-<!--logs.wxml-->
-<navigation-bar title="查看启动日志" back="{{true}}" color="black" background="#FFF"></navigation-bar>
-<scroll-view class="scrollarea" scroll-y type="list">
-  <block wx:for="{{logs}}" wx:key="timeStamp" wx:for-item="log">
-    <view class="log-item">{{index + 1}}. {{log.date}}</view>
-  </block>
-</scroll-view>
+<!--pages/logs/logs.wxml-->
+<view class="global-page-container">
+  <scroll-view class="scroll-wrapper" scroll-y type="list">
+    <view class="log-header">
+      <text class="log-title">启动日志</text>
+    </view>
+    <view class="log-list">
+      <block wx:for="{{logs}}" wx:key="timeStamp" wx:for-item="log">
+        <view class="log-item">{{index + 1}}. {{log.date}}</view>
+      </block>
+    </view>
+  </scroll-view>
+</view>
