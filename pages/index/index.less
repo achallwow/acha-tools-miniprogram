@@ -11,7 +11,7 @@
   position: fixed;
   left: 24rpx;
   border-radius: 50%;
-  background: ~"var(--bg-gray)";
+  background: @bg-gray;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -27,8 +27,8 @@
   .back-icon {
     width: 20rpx;
     height: 20rpx;
-    border-top: 4rpx solid ~"var(--text-black)";
-    border-left: 4rpx solid ~"var(--text-black)";
+    border-top: 4rpx solid @text-black;
+    border-left: 4rpx solid @text-black;
     transform: rotate(-45deg);
     margin-left: 6rpx;
   }
@@ -37,7 +37,7 @@
 .scroll-wrapper {
   width: 100vw; 
   height: 100vh;
-  background-color: ~"var(--bg-gray)";
+  background-color: @bg-gray;
   overflow-x: hidden;
 }
 
@@ -48,23 +48,21 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background-color: ~"var(--bg-gray)";
+  background-color: @bg-gray;
   box-sizing: border-box;
   padding-left: 40rpx;
   padding-right: 40rpx;
   padding-bottom: calc(env(safe-area-inset-bottom) + 180rpx); 
-  overflow: visible !important; 
+  overflow: visible;
   position: relative;
 }
 
-/* 顶部输入区：确保绝对中轴对称 */
+/* 顶部输入区 */
 .top-box {
   width: 100%;
   text-align: center;
   margin-bottom: 20rpx;
   flex-shrink: 0;
-  position: relative;
-  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -83,7 +81,7 @@
   background-color: transparent;
   border: none;
   outline: none;
-  padding: 0; /* 消除内边距对 text-align: center 的干扰 */
+  padding: 0;
 }
 
 .date-text {
@@ -92,21 +90,19 @@
   color: @text-gray-dark;
   letter-spacing: 2rpx;
   text-align: center;
-  position: relative;
   height: 30rpx;
   line-height: 30rpx;
   margin-top: 10rpx;
 }
 
-/* 核心画板：强制锁定绝对物理对称 */
+/* 核心画板 */
 .grid-box {
-  width: auto; 
   align-self: stretch;
-  margin: 140rpx -10rpx 90rpx -10rpx; /* 绝对物理坐标：上140, 左右-10, 下90 */
-  background-color: ~"var(--bg-color)"; 
+  margin: 140rpx -10rpx 90rpx -10rpx;
+  background-color: @bg-white;
   border-radius: 24rpx;
   box-sizing: border-box;
-  padding: 30rpx; 
+  padding: 30rpx;
   padding-bottom: 40rpx;
   display: flex;
   flex-direction: column; 
@@ -116,20 +112,19 @@
   box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.02); 
 }
 
-/* 九宫格排版网格 */
+/* 九宫格 */
 .grid-items-wrapper {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   gap: 4rpx;
-  margin-top: 0;
   position: relative;
 }
 
 .grid-item {
   width: calc((100% - 8rpx) / 3); 
   aspect-ratio: 1 / 1;
-  background-color: ~"var(--bg-gray)"; 
+  background-color: @bg-gray;
   border-radius: 0; 
   display: flex;
   align-items: center;
@@ -145,7 +140,7 @@
   }
 }
 
-/* iOS 级镜像悬浮块 */
+/* 拖拽镜像 */
 .drag-ghost {
   position: fixed;
   width: 205rpx;
@@ -188,7 +183,6 @@
 }
 
 .add-wrap {
-  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
@@ -202,14 +196,14 @@
   font-weight: 300;
 }
 
+/* 【关键修复】移除 backdrop-filter，使用兼容性更好的半透明背景 */
 .delete-btn {
   position: absolute;
   top: 10rpx;
   right: 10rpx;
   width: 36rpx;
   height: 36rpx;
-  background-color: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  background-color: rgba(0, 0, 0, 0.5);
   color: @bg-white;
   border-radius: 50%;
   display: flex;
@@ -232,12 +226,9 @@
   margin-top: 30rpx;
 }
 
-/* 品牌静态签名：极致垂直居中方案 */
 .brand-signature-container {
   width: 100%;
   position: absolute;
-  /* 精准微调：锁定在 200rpx 视觉黄金点 */
-  top: auto;
   bottom: calc(env(safe-area-inset-bottom) + 200rpx); 
   height: 120rpx; 
   display: flex;
@@ -259,7 +250,6 @@
   bottom: calc(env(safe-area-inset-bottom) + 40rpx); 
   left: 40rpx;
   right: 40rpx;
-  width: auto;
   display: flex;
   gap: 24rpx;
   z-index: 10;
@@ -276,11 +266,15 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  background-color: #1D1D1F !important;
-  color: @bg-white !important;
-  border: none !important;
+  background-color: @text-black;
+  color: @bg-white;
+  border: none;
   box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.05);
   transition: all 0.2s ease;
+
+  &::after {
+    border: none;
+  }
 
   &:active {
     transform: scale(0.97);
@@ -289,16 +283,14 @@
 }
 
 .action-btn.secondary {
-  background-color: @bg-white !important;
-  color: #1D1D1F !important;
+  background-color: @bg-white;
+  color: @text-black;
 }
-
-.action-btn::after { border: none !important; }
 
 .action-btn[disabled] {
   opacity: 0.5;
-  color: @bg-white;
-  background-color: #1D1D1F !important;
+  // background-color 继承自 .action-btn
+  // color 继承自 .action-btn
 }
 
 .canvas-hide {
@@ -335,7 +327,7 @@
 .picker-title {
   font-size: 32rpx;
   font-weight: bold;
-  color: #1D1D1F;
+  color: @text-black;
   text-align: center;
   margin-bottom: 40rpx;
 }
@@ -358,17 +350,17 @@
   justify-content: center;
   overflow: hidden;
   box-sizing: border-box;
-}
 
-.logo-item.active {
-  border-color: @primary-color;
-  background-color: #f0fff7;
-}
+  &.active {
+    border-color: @primary-color;
+    background-color: #f0fff7;
+  }
 
-.logo-item image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .picker-close {
