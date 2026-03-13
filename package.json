@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@types/wechat-miniprogram": "^3.4.10"
+  }
+}

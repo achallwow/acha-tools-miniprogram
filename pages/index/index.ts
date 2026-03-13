@@ -14,8 +14,8 @@ Page({
     currentDate: '',
 
     // --- Logo 相关 ---
-    logoList: ['/static/images/logo1.png', '/static/images/logo2.png', '/static/images/logo3.png'],
-    currentLogoIndex: -1, // -1 表示未选择
+    logoList: ['/images/logo1.png', '/images/logo2.png', '/images/logo3.png'],
+    currentLogoIndex: -1,
     showLogoPicker: false,
 
     // --- 页面布局及导航 ---
@@ -34,7 +34,7 @@ Page({
       { id: 'item-7', src: '', tx: 0, ty: 0, slot: 7 },
       { id: 'item-8', src: '', tx: 0, ty: 0, slot: 8 }
     ] as IGridItem[],
-    slotRects: [] as IRect[], // 坑位的物理位置
+    slotRects: [] as IRect[],
 
     // --- 拖拽交互状态 ---
     draggingIndex: -1,
@@ -47,16 +47,9 @@ Page({
     hasEmptySlot: true,
   },
 
-  // ===========================================
-  // Section: 生命周期函数 (Lifecycle Methods)
-  // ===========================================
-
   onLoad() {
-    // 1. 读取缓存
     const cachedTitle = wx.getStorageSync('daily_report_title') as string;
     const cachedLogoIndex = wx.getStorageSync('daily_report_logo_index');
-
-    // 2. 初始化导航栏和日期
     const rect = wx.getMenuButtonBoundingClientRect();
     const now = new Date();
     this.setData({
@@ -67,18 +60,12 @@ Page({
       currentLogoIndex: cachedLogoIndex === '' || cachedLogoIndex === null ? -1 : Number(cachedLogoIndex)
     });
     
-    // 3. 如果有缓存Logo，则同步更新gridItems中的logo src
     if (this.data.currentLogoIndex !== -1) {
       this.updateLogoSrc(this.data.currentLogoIndex);
     }
 
-    // 4. 获取坑位物理位置
     setTimeout(() => { this.refreshSlotRects(); }, 300);
   },
-
-  // ===========================================
-  // Section: 核心拖拽交互 (Drag & Drop Engine)
-  // ===========================================
   
   onDragStart(e: WechatMiniprogram.TouchEvent) {
     const index = e.currentTarget.dataset.index as number;
@@ -115,7 +102,7 @@ Page({
 
     for (let i = 0; i < slotRects.length; i++) {
       if (i === 4) continue;
-      const occupantIdx = gridItems.findIndex(it => it.slot === i);
+      const occupantIdx = gridItems.findIndex((it: IGridItem) => it.slot === i);
       if (occupantIdx === draggingIndex) continue;
 
       const rect = slotRects[i];
@@ -144,8 +131,8 @@ Page({
 
   onDragEnd() {
     if (this.data.draggingIndex === -1) return;
-    const sortedList = [...this.data.gridItems].sort((a, b) => a.slot - b.slot);
-    sortedList.forEach(item => {
+    const sortedList = [...this.data.gridItems].sort((a: IGridItem, b: IGridItem) => a.slot - b.slot);
+    sortedList.forEach((item: IGridItem) => {
       item.tx = 0;
       item.ty = 0;
     });
@@ -157,10 +144,6 @@ Page({
     });
     this.checkHasEmptySlot();
   },
-
-  // ===========================================
-  // Section: 图片与Logo处理
-  // ===========================================
 
   onGridItemTap(e: WechatMiniprogram.TouchEvent) {
     if (this.data.isActuallyDragging) return;
@@ -178,7 +161,7 @@ Page({
       count: 1,
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
-      success: (res) => {
+      success: (res: WechatMiniprogram.ChooseImageSuccessCallbackResult) => {
         this.setData({
           [`gridItems[${index}].src`]: res.tempFilePaths[0]
         });
@@ -188,7 +171,7 @@ Page({
   },
 
   chooseImages() {
-    const emptySlotsCount = this.data.gridItems.filter(it => it.id !== 'logo' && !it.src).length;
+    const emptySlotsCount = this.data.gridItems.filter((it: IGridItem) => it.id !== 'logo' && !it.src).length;
     if (emptySlotsCount === 0) return;
 
     wx.chooseMedia({
@@ -196,11 +179,11 @@ Page({
       mediaType: ['image'],
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
-      success: (res) => {
-        const paths = res.tempFiles.map(f => f.tempFilePath);
+      success: (res: WechatMiniprogram.ChooseMediaSuccessCallbackResult) => {
+        const paths = res.tempFiles.map((f: WechatMiniprogram.MediaFile) => f.tempFilePath);
         const newList = [...this.data.gridItems];
         let pathIndex = 0;
-        newList.forEach(item => {
+        newList.forEach((item: IGridItem) => {
           if (item.id !== 'logo' && !item.src && pathIndex < paths.length) {
             item.src = paths[pathIndex];
             pathIndex++;
@@ -214,7 +197,7 @@ Page({
 
   deleteImage(e: WechatMiniprogram.TouchEvent) {
     const id = e.currentTarget.dataset.id as string;
-    const index = this.data.gridItems.findIndex(it => it.id === id);
+    const index = this.data.gridItems.findIndex((it: IGridItem) => it.id === id);
     if (index !== -1) {
       this.setData({
         [`gridItems[${index}].src`]: ''
@@ -236,32 +219,28 @@ Page({
   updateLogoSrc(logoIndex: number) {
     if (logoIndex < 0 || logoIndex >= this.data.logoList.length) return;
     const logoSrc = this.data.logoList[logoIndex];
-    this.setData({ 'gridItems[4].src': logoSrc });
+    const logoItemIndex = this.data.gridItems.findIndex((it: IGridItem) => it.id === 'logo');
+    if (logoItemIndex !== -1) {
+       this.setData({ [`gridItems[${logoItemIndex}].src`]: logoSrc });
+    }
   },
 
-  // ===========================================
-  // Section: Canvas 图片合成与保存
-  // ===========================================
-
   async saveGridImage() {
-    // 1. 前置校验
     if (!this.data.title) {
       return wx.showToast({ title: '请输入标题', icon: 'none' });
     }
     if (this.data.currentLogoIndex === -1) {
       return wx.showToast({ title: '请选择一个Logo', icon: 'none' });
     }
-    if (this.data.gridItems.some(it => it.id !== 'logo' && !it.src)) {
+    if (this.data.gridItems.some((it: IGridItem) => it.id !== 'logo' && !it.src)) {
       return wx.showToast({ title: '请先填满所有图片格子', icon: 'none' });
     }
 
-    // 2. 权限请求
     const authorized = await checkAndRequestPhotosAlbumScope();
     if (!authorized) return;
 
     wx.showLoading({ title: '图片生成中...', mask: true });
 
-    // 3. 执行合成与保存
     try {
       const tempFilePath = await this.doImageSynthesis();
       wx.saveImageToPhotosAlbum({
@@ -283,10 +262,10 @@ Page({
   doImageSynthesis(): Promise<string> {
     return new Promise((resolve, reject) => {
       const query = this.createSelectorQuery();
-      query.select('#gridCanvas').fields({ node: true, size: true }).exec(async (res) => {
+      query.select('#gridCanvas').fields({ node: true, size: true }).exec(async (res: any) => {
         if (!res[0] || !res[0].node) return reject(new Error('获取Canvas节点失败'));
         const canvas = res[0].node as WechatMiniprogram.Canvas;
-        const ctx = canvas.getContext('2d') as WechatMiniprogram.CanvasContext;
+        const ctx = canvas.getContext('2d') as WechatMiniprogram.CanvasRenderingContext2D;
 
         const dpr = wx.getSystemInfoSync().pixelRatio;
         const W = 1242, gridW = 388, gridGap = 8, gridStartX = 31, gridStartY = 280;
@@ -301,22 +280,19 @@ Page({
         
         const { title, currentDate, gridItems, currentLogoIndex, logoList } = this.data;
 
-        // --- 绘制标题和日期 ---
         this.drawCanvasText(ctx, title, 'bold 72px sans-serif', '#222222', W / 2, 100);
         this.drawCanvasText(ctx, currentDate, 'bold 36px sans-serif', '#666666', W / 2, 200);
 
-        // --- 异步加载所有图片 ---
         const loadImage = (src: string): Promise<WechatMiniprogram.Image | null> => new Promise((r) => {
           if (!src) return r(null);
           const img = canvas.createImage();
           img.src = src;
           img.onload = () => r(img);
-          img.onerror = () => r(null); // 加载失败也返回 null
+          img.onerror = () => r(null);
         });
 
         try {
-          const imagePromises = gridItems.map(item => {
-            // 【关键修复】确保合成时使用的是最新的、正确的 Logo src
+          const imagePromises = gridItems.map((item: IGridItem) => {
             const src = (item.id === 'logo') 
                 ? (currentLogoIndex !== -1 ? logoList[currentLogoIndex] : '') 
                 : item.src;
@@ -324,7 +300,6 @@ Page({
           });
           const images = await Promise.all(imagePromises);
 
-          // --- 绘制九宫格 ---
           for (let i = 0; i < images.length; i++) {
             const row = Math.floor(i / 3), col = i % 3;
             const x = gridStartX + col * (gridW + gridGap);
@@ -339,12 +314,10 @@ Page({
             }
           }
 
-          // --- 绘制底部 Slogan ---
           this.drawCanvasText(ctx, '专注您的生活', 'bold 32px sans-serif', '#666666', W / 2, H - 125);
 
-          // --- 导出图片 ---
           setTimeout(() => {
-            wx.canvasToTempFilePath({ canvas, success: (res) => resolve(res.tempFilePath), fail: reject });
+            wx.canvasToTempFilePath({ canvas, success: (res: WechatMiniprogram.CanvasToTempFilePathSuccessCallbackResult) => resolve(res.tempFilePath), fail: reject });
           }, 100);
 
         } catch (err) {
@@ -354,22 +327,18 @@ Page({
     });
   },
 
-  // ===========================================
-  // Section: 辅助函数 (Helper Functions)
-  // ===========================================
-
   refreshSlotRects() {
-    wx.createSelectorQuery().selectAll('.grid-item').boundingClientRect((rects) => {
+    this.createSelectorQuery().selectAll('.grid-item').boundingClientRect((rects: WechatMiniprogram.BoundingClientRectCallbackResult[]) => {
       this.setData({ slotRects: rects as IRect[] });
     }).exec();
   },
 
   checkHasEmptySlot() {
-    const hasEmpty = this.data.gridItems.some(it => it.id !== 'logo' && !it.src);
+    const hasEmpty = this.data.gridItems.some((it: IGridItem) => it.id !== 'logo' && !it.src);
     this.setData({ hasEmptySlot: hasEmpty });
   },
 
-  drawCanvasText(ctx: WechatMiniprogram.CanvasContext, text: string, font: string, color: string, x: number, y: number) {
+  drawCanvasText(ctx: WechatMiniprogram.CanvasRenderingContext2D, text: string, font: string, color: string, x: number, y: number) {
     if (!text) return;
     ctx.font = font;
     ctx.fillStyle = color;
@@ -378,7 +347,7 @@ Page({
     ctx.fillText(text, x, y);
   },
 
-  drawAspectFillImage(ctx: WechatMiniprogram.CanvasContext, img: WechatMiniprogram.Image, x: number, y: number, w: number, h: number) {
+  drawAspectFillImage(ctx: WechatMiniprogram.CanvasRenderingContext2D, img: WechatMiniprogram.Image, x: number, y: number, w: number, h: number) {
     const imgRatio = img.width / img.height;
     const canvasRatio = w / h;
     let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
