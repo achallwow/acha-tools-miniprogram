@@ -14,7 +14,7 @@ Page({
     currentDate: '',
 
     // --- Logo 相关 ---
-    logoList: ['/images/logo1.png', '/images/logo2.png', '/images/logo3.png'],
+    logoList: ['/static/images/logo1.png', '/static/images/logo2.png', '/static/images/logo3.png'],
     currentLogoIndex: -1,
     showLogoPicker: false,
 
