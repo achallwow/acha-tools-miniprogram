@@ -1,29 +1,23 @@
 /* pages/home/index.less */
 
 page {
-  background-color: ~"var(--bg-gray)"; 
+  background-color: ~"var(--bg-gray)";
   --primary-color: #1D1D1F;
   --text-main: #1D1D1F;
   --text-sub: ~"var(--text-gray-dark)";
   --card-bg: ~"var(--bg-color)";
 }
-.scroll-wrapper {
-  /* 废弃：暴力位移法。改用全局 app.less 里的 ::-webkit-scrollbar 隐藏方案 */
-  width: 100vw; 
-  height: 100vh;
-  background-color: ~"var(--bg-gray)";
-  overflow-x: hidden;
-}
 
+/* stylelint-disable-next-line declaration-no-important */
 .page-container {
-  width: 100vw; /* 保持内容宽度依然是标准 100vw */
-  padding-top: 0 !important; 
+  width: 100vw;
+  padding-top: 0 !important; /* 覆盖全局样式，home页不需要顶部padding */
   padding-left: 40rpx;
   padding-right: 40rpx;
-  padding-bottom: 20rpx; /* 进一步减少底部留白，使其更加贴近底部 */
+  padding-bottom: 20rpx;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  overflow: visible !important; 
+  overflow: visible !important; /* 确保内容可见 */
 }
 
 .card-hover {
@@ -34,17 +28,18 @@ page {
 
 .header-section {
   margin-top: 0;
-  margin-bottom: 30rpx; /* 将底部间距从 60rpx 缩小为 30rpx，拉近大卡片距离 */
-  padding-left: 10rpx; 
+  margin-bottom: 30rpx;
+  padding-left: 10rpx;
   animation: fadeInDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-  
+
   .headline {
     font-size: 56rpx;
     font-weight: 800;
     color: var(--text-main);
     letter-spacing: -0.5rpx;
     line-height: 1.2;
-    
+
+    /* stylelint-disable-next-line property-no-vendor-prefix */
     .highlight {
       display: block;
       color: transparent;
@@ -60,7 +55,7 @@ page {
   height: 300rpx;
   background-color: var(--primary-color);
   border-radius: 48rpx;
-  padding: 40rpx; /* 将上下 padding 缩小为 40rpx，给文字腾出空间 */
+  padding: 40rpx;
   box-sizing: border-box;
   display: flex;
   justify-content: space-between;
@@ -68,7 +63,7 @@ page {
   margin-bottom: 40rpx;
   box-shadow: 0 30rpx 60rpx -12rpx rgba(0, 0, 0, 0.12);
   transition: transform 0.3s ease;
-  
+
   .hero-bg-pattern {
     position: absolute;
     top: 0; right: 0; bottom: 0; left: 0;
@@ -84,31 +79,32 @@ page {
     width: 60%;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* 新增：让所有文本内容块在父容器内绝对垂直居中 */
-    padding-left: 6rpx; /* 整体文本向右微调 6rpx */
-    
+    justify-content: center;
+    padding-left: 6rpx;
+
     .tag-featured {
       display: inline-block;
       padding: 6rpx 16rpx;
-      background: #FF3B30; /* 苹果级警示/亮醒红色 */
+      background: #FF3B30;
       border-radius: 100rpx;
       font-size: 20rpx;
       color: #FFF;
-      font-weight: 700; /* 加粗一点以匹配强烈的背景色 */
+      font-weight: 700;
       letter-spacing: 1rpx;
-      margin-bottom: 20rpx; /* 统一间距节奏为 20rpx */
+      margin-bottom: 20rpx;
       align-self: flex-start;
-      box-shadow: 0 4rpx 12rpx rgba(255, 59, 48, 0.4); /* 添加发光红阴影 */
+      box-shadow: 0 4rpx 12rpx rgba(255, 59, 48, 0.4);
     }
-    
+
     .hero-title {
       font-size: 44rpx;
       font-weight: 700;
       color: #FFF;
-      line-height: 1.1; /* 关键修复：收紧大标题的默认行高，打掉文字上下自带的透明内边距 */
-      margin-bottom: 20rpx; /* 统一间距节奏为 20rpx */
+      line-height: 1.1;
+      margin-bottom: 20rpx;
     }
-    
+
+    /* stylelint-disable property-no-vendor-prefix */
     .hero-desc {
       font-size: 26rpx;
       color: rgba(255,255,255,0.8);
@@ -118,6 +114,7 @@ page {
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+    /* stylelint-enable property-no-vendor-prefix */
   }
 
   .hero-visual {
@@ -127,7 +124,7 @@ page {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    
+
     .mini-grid-preview {
       width: 140rpx;
       height: 140rpx;
@@ -136,403 +133,21 @@ page {
       grid-template-rows: repeat(3, 1fr);
       gap: 6rpx;
       transform: rotate(10deg);
-      margin-right: 20rpx; /* 新增：将九宫格向左推，远离右边缘 */
-      
+      margin-right: 20rpx;
+
       .m-grid-item {
         background-color: rgba(255,255,255,0.2);
-        border-radius: 6rpx; 
+        border-radius: 6rpx;
         &:nth-child(5) {
-          background-color: #FFF; 
+          background-color: #FFF;
         }
       }
     }
   }
 }
 
-/* 快捷分类矩阵：还原原始极简形状 */
-.category-matrix {
-  display: flex;
-  justify-content: space-between; 
-  margin-bottom: 40rpx;
-  
-  .matrix-item {
-    width: 146rpx; 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: all 0.3s ease;
-    
-    .icon-circle {
-      width: 126rpx; 
-      height: 126rpx;
-      background-color: var(--card-bg);
-      border-radius: 38rpx; 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16rpx;
-      box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.03);
-      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      
-      .css-icon {
-        position: relative;
-        transition: all 0.3s ease;
-        transform: scale(1.05); 
-        
-        /* 引入 UX 规范：安全边界盒 + 长边约束 (系统级底层防错) */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 48rpx;
-        height: 48rpx;
-        
-        /* 还原：原始极简 CSS 图标库 */
-        &.icon-img {
-          /* 物理大小与边界盒对齐，通过 box-sizing 约束内部边框 */
-          width: 40rpx; height: 30rpx; border: 4rpx solid #1D1D1F; border-radius: 8rpx;
-          &::after { content:''; position:absolute; width: 12rpx; height: 12rpx; background:#1D1D1F; border-radius:50%; top: 4rpx; right: 4rpx; }
-        }
-        &.icon-text {
-          /* 经典汉堡菜单/三道杠图标：强制与图片处理(40rpx x 30rpx)对齐 */
-          width: 40rpx; /* 宽度对齐图片处理的 40rpx */
-          height: 4rpx; background: #1D1D1F; 
-          /* 调整阴影间距为 13rpx，总高度 4 + 13 + 13 = 30rpx，高度完美对齐图片处理的 30rpx */
-          box-shadow: 0 13rpx 0 #1D1D1F, 0 26rpx 0 #1D1D1F;
-          margin-top: -26rpx; /* 修正阴影偏移，绝对居中 */
-        }
-        &.icon-color {
-          /* 纯 CSS 绘制的极简锁图标（复用 .mystery 的逻辑） */
-          width: 40rpx; height: 44rpx; 
-          &::after { 
-            content: ''; position: absolute; 
-            bottom: 0; left: 0; 
-            width: 100%; height: 28rpx; 
-            border: 4rpx solid #1D1D1F; 
-            border-radius: 6rpx; 
-            box-sizing: border-box; 
-          }
-          &::before { 
-            content: ''; position: absolute; 
-            top: 0; left: 8rpx; 
-            width: 24rpx; height: 16rpx; 
-            border: 4rpx solid #1D1D1F; 
-            border-bottom: transparent; 
-            border-radius: 24rpx 24rpx 0 0; 
-            box-sizing: border-box; 
-          }
-        }
-        &.icon-layout {
-          /* 纯 CSS 绘制的极简锁图标（完全等同上方，确保未完成的分类都是锁） */
-          width: 40rpx; height: 44rpx; 
-          &::after { 
-            content: ''; position: absolute; 
-            bottom: 0; left: 0; 
-            width: 100%; height: 28rpx; 
-            border: 4rpx solid #1D1D1F; 
-            border-radius: 6rpx; 
-            box-sizing: border-box; 
-          }
-          &::before { 
-            content: ''; position: absolute; 
-            top: 0; left: 8rpx; 
-            width: 24rpx; height: 16rpx; 
-            border: 4rpx solid #1D1D1F; 
-            border-bottom: transparent; 
-            border-radius: 24rpx 24rpx 0 0; 
-            box-sizing: border-box; 
-          }
-        }
-      }
-    }
-    
-    .item-name {
-      font-size: 24rpx;
-      color: var(--text-sub);
-      font-weight: 700; 
-      transition: all 0.3s ease;
-    }
-
-    /* 激活态：还原极简黑白 */
-    &.active {
-      .icon-circle {
-        background-color: #1D1D1F;
-        box-shadow: 0 15rpx 35rpx rgba(29, 29, 31, 0.15);
-        transform: translateY(-4rpx);
-        .css-icon {
-          &.icon-img { border-color: #FFF; &::after, &::before { background:#FFF; border-color: #FFF; } }
-          &.icon-text { background: #FFF; box-shadow: 0 12rpx 0 #FFF, 0 24rpx 0 #FFF; }
-          &.icon-color, &.icon-layout { 
-            &::after, &::before { border-color: #FFF; }
-            &::before { border-bottom-color: transparent; }
-          }
-        }
-      }
-      .item-name {
-        color: #1D1D1F;
-        font-weight: 700;
-      }
-    }
-  }
-}
-
-.list-section {
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    margin-bottom: 30rpx;
-    padding: 0 10rpx;
-    
-    .section-title {
-      font-size: 36rpx;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-  }
-  
-  .tool-list {
-    display: flex;
-    flex-direction: column;
-    gap: 24rpx; 
-    
-    /* 极致丝滑折叠容器 */
-    .expandable-container {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      max-height: 0;
-      opacity: 0;
-      transition: 
-        max-height 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-        opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-        margin-top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-        margin-bottom 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-      
-      margin-top: -24rpx;
-      margin-bottom: 0;
-      gap: 24rpx;
-
-      &.is-expanded {
-        max-height: 800rpx;
-        opacity: 1;
-        margin-top: 0;
-        margin-bottom: 0;
-      }
-    }
-
-    .tool-card {
-      background-color: var(--card-bg);
-      border-radius: 40rpx; 
-      padding: 28rpx 30rpx; /* 将上下内边距压缩为 28rpx，左右保持 30rpx，总高度 28 + 100 + 28 = 156rpx */
-      display: flex;
-      align-items: center;
-      box-shadow: 0 8rpx 20rpx rgba(0,0,0,0.02);
-      animation: slideInUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-      
-      .tool-icon-box {
-        width: 100rpx;
-        height: 100rpx;
-        border-radius: 28rpx;
-        flex-shrink: 0;
-        margin-right: 30rpx;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        
-        /* 工具图标库：专属动态渲染 (日报改为深色以适配浅灰背景) */
-        .dynamic-icon {
-          position: relative;
-          
-          /* 引入 UX 规范：安全边界盒 + 长边约束 (系统级底层防错) */
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 48rpx;
-          height: 48rpx;
-          
-          &.mystery {
-            /* 纯 CSS 绘制的极简锁图标：保持与系统其他图标绝对统一的 4rpx 线条与视觉基因 */
-            width: 40rpx; height: 44rpx; 
-            &::after { 
-              /* 锁体 (Body) */
-              content: ''; position: absolute; 
-              bottom: 0; left: 0; 
-              width: 100%; height: 28rpx; 
-              border: 4rpx solid #1D1D1F; 
-              border-radius: 6rpx; 
-              box-sizing: border-box; 
-            }
-            &::before { 
-              /* 锁梁 (Shackle) */
-              content: ''; position: absolute; 
-              top: 0; left: 8rpx; 
-              width: 24rpx; height: 16rpx; 
-              border: 4rpx solid #1D1D1F; 
-              border-bottom: transparent; 
-              border-radius: 24rpx 24rpx 0 0; 
-              box-sizing: border-box; 
-            }
-          }
-          &.img {
-            /* 在 48x48 的边界内，按比例约束 */
-            width: 40rpx; height: 30rpx; border: 4rpx solid #1D1D1F; border-radius: 8rpx;
-            &::after { content:''; position:absolute; width: 12rpx; height: 12rpx; background:#1D1D1F; border-radius:50%; top: 4rpx; right: 4rpx; }
-          }
-          &.grid {
-            /* 方案A2：正方形田字格 (纯 CSS 绘制) - 经典四宫格拼图 */
-            width: 40rpx; height: 40rpx; /* 将宽度和高度增加到 40rpx，绝对对齐旁边图标的最长边 */
-            border: 4rpx solid #1D1D1F; 
-            border-radius: 8rpx; 
-            box-sizing: border-box;
-
-            /* 横向中心分割线：恢复 4rpx 确保物理像素网格的绝对对齐，避免 3rpx 换算产生的 0.5px 导致模糊过细 */
-            &::before { 
-              content: ''; position: absolute; 
-              top: 50%; left: 0; 
-              width: 100%; height: 4rpx; 
-              background: #1D1D1F; 
-              margin-top: -2rpx; 
-              opacity: 0.85; /* 终极 UX 魔法：保持物理不发虚的情况下，降低透明度以减弱视觉重量，达到“变细一点点”的中间值 */
-            }
-
-            /* 竖向中心分割线：保持 4rpx 标准粗细 */
-            &::after { 
-              content: ''; position: absolute; 
-              top: 0; left: 50%; 
-              width: 4rpx; height: 100%; 
-              background: #1D1D1F; 
-              margin-left: -2rpx;
-            }
-          }          &.heart {
-            width: 32rpx; height: 32rpx; background: #1D1D1F; transform: rotate(45deg);
-            &::after, &::before { content:''; width: 32rpx; height: 32rpx; background: #1D1D1F; border-radius: 50%; position: absolute; }
-            &::after { left: -16rpx; } &::before { top: -16rpx; }
-          }
-          &.wait {
-            width: 32rpx; height: 32rpx; border: 4rpx solid #1D1D1F; border-radius: 50%; border-top-color: transparent;
-            animation: rotate 1s linear infinite;
-          }
-          &.qr {
-            width: 36rpx; height: 36rpx; border: 4rpx solid #1D1D1F;
-            &::after { content:''; position:absolute; top: 6rpx; left: 6rpx; width: 12rpx; height: 12rpx; background:#1D1D1F; }
-          }
-        }
-      }
-      
-      .tool-info {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding-right: 20rpx;
-        
-        .tool-name-row {
-          display: flex;
-          align-items: center;
-          margin-bottom: 8rpx;
-          
-          .tool-name {
-            font-size: 32rpx;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-right: 16rpx;
-          }
-        }
-        
-        .tool-desc {
-          font-size: 24rpx; /* 字体缩小一号，原来是 26rpx */
-          color: var(--text-sub); 
-          line-height: 1.4;
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-      }
-      
-      .chevron-right {
-        width: 16rpx;
-        height: 16rpx;
-        border-top: 3rpx solid #C7C7CC;
-        border-right: 3rpx solid #C7C7CC;
-        transform: rotate(45deg);
-      }
-    }
-
-    .more-action-card {
-      background-color: rgba(0, 0, 0, 0.03); 
-      border: none;
-      border-radius: 40rpx;
-      padding: 36rpx;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      margin-top: 0; 
-      
-      .action-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        
-        .action-icon {
-          display: flex;
-          gap: 8rpx;
-          margin-bottom: 12rpx;
-          transition: transform 0.5s ease;
-          
-          .dot {
-            width: 8rpx;
-            height: 8rpx;
-            background-color: var(--text-sub);
-            border-radius: 50%;
-          }
-        }
-        
-        .action-text {
-          font-size: 24rpx;
-          font-weight: 600;
-          color: var(--text-sub);
-          letter-spacing: 1rpx;
-        }
-      }
-
-      &.is-collapse {
-        background-color: transparent;
-        .action-icon { transform: rotate(180deg); }
-      }
-    }
-
-    .action-hover {
-      background-color: rgba(0, 0, 0, 0.06);
-      transform: scale(0.98);
-    }
-  }
-}
-
-.footer-copyright {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-top: 40rpx; 
-  margin-bottom: 20rpx; 
-  opacity: 0.6; 
-  
-  .brand-name {
-    font-size: 24rpx;
-    font-weight: 700;
-    color: var(--text-sub);
-    margin-bottom: 8rpx;
-    letter-spacing: 2rpx;
-  }
-  
-  .author-info {
-    font-size: 20rpx;
-    color: #C7C7CC; 
-    font-weight: 500;
-  }
+.category-matrix, .list-section, .footer-copyright {
+  animation: slideInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
 @keyframes fadeInDown {
@@ -541,14 +156,8 @@ page {
 }
 
 @keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(30rpx); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes rotate {
