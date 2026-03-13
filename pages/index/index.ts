@@ -1,80 +1,89 @@
-// pages/index/index.ts
-import { IGridItem, IRect } from \'../../types/index\';
-import { checkAndRequestPhotosAlbumScope } from \'../../utils/util\';
 
+// pages/index/index.ts
+import { IGridItem, IRect } from '../../types/index';
+import { checkAndRequestPhotosAlbumScope } from '../../utils/util';
+
+/**
+ * @file 工作日报生成页核心逻辑
+ * @description 该页面集成了图片拖拽排序、Logo选择、标题编辑以及最终图片合成与保存的功能。
+ */
 Page({
   data: {
-    title: \'\',
-    currentDate: \'\',
-    logoList: [\'/static/images/logo1.png\', \'/static/images/logo2.png\', \'/static/images/logo3.png\'],
-    currentLogoIndex: -1,
+    // --- 页面内容数据 ---
+    title: '',
+    currentDate: '',
+
+    // --- Logo 相关 ---
+    logoList: ['/static/images/logo1.png', '/static/images/logo2.png', '/static/images/logo3.png'],
+    currentLogoIndex: -1, // -1 表示未选择
     showLogoPicker: false,
+
+    // --- 页面布局及导航 ---
     navTop: 0,
     navHeight: 0,
+
+    // --- 【核心数据】九宫格 ---
     gridItems: [
-      { id: \'item-0\', src: \'\', tx: 0, ty: 0, slot: 0 },
-      { id: \'item-1\', src: \'\', tx: 0, ty: 0, slot: 1 },
-      { id: \'item-2\', src: \'\', tx: 0, ty: 0, slot: 2 },
-      { id: \'item-3\', src: \'\', tx: 0, ty: 0, slot: 3 },
-      { id: \'logo\',   src: \'\', tx: 0, ty: 0, slot: 4 },
-      { id: \'item-5\', src: \'\', tx: 0, ty: 0, slot: 5 },
-      { id: \'item-6\', src: \'\', tx: 0, ty: 0, slot: 6 },
-      { id: \'item-7\', src: \'\', tx: 0, ty: 0, slot: 7 },
-      { id: \'item-8\', src: \'\', tx: 0, ty: 0, slot: 8 }
+      { id: 'item-0', src: '', tx: 0, ty: 0, slot: 0 },
+      { id: 'item-1', src: '', tx: 0, ty: 0, slot: 1 },
+      { id: 'item-2', src: '', tx: 0, ty: 0, slot: 2 },
+      { id: 'item-3', src: '', tx: 0, ty: 0, slot: 3 },
+      { id: 'logo',   src: '', tx: 0, ty: 0, slot: 4 },
+      { id: 'item-5', src: '', tx: 0, ty: 0, slot: 5 },
+      { id: 'item-6', src: '', tx: 0, ty: 0, slot: 6 },
+      { id: 'item-7', src: '', tx: 0, ty: 0, slot: 7 },
+      { id: 'item-8', src: '', tx: 0, ty: 0, slot: 8 }
     ] as IGridItem[],
-    slotRects: [] as IRect[],
+    slotRects: [] as IRect[], // 坑位的物理位置
+
+    // --- 拖拽交互状态 ---
     draggingIndex: -1,
     ghostX: 0, ghostY: 0,
-    ghostSrc: \'\',
+    ghostSrc: '',
     touchStartX: 0, touchStartY: 0,
     isActuallyDragging: false,
-    hasEmptySlot: true
+
+    // --- UI 状态 ---
+    hasEmptySlot: true,
   },
+
+  // ===========================================
+  // Section: 生命周期函数 (Lifecycle Methods)
+  // ===========================================
 
   onLoad() {
     // 1. 读取缓存
-    const cachedTitle = wx.getStorageSync(\'daily_report_title\') as string;
-    const cachedLogoIndex = wx.getStorageSync(\'daily_report_logo_index\');
+    const cachedTitle = wx.getStorageSync('daily_report_title') as string;
+    const cachedLogoIndex = wx.getStorageSync('daily_report_logo_index');
 
+    // 2. 初始化导航栏和日期
     const rect = wx.getMenuButtonBoundingClientRect();
     const now = new Date();
     this.setData({
       navTop: rect.top,
       navHeight: rect.height,
-      currentDate: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, \'0\')}.${String(now.getDate()).padStart(2, \'0\')}`,
-      title: cachedTitle || \'\',
-      currentLogoIndex: cachedLogoIndex === \'\' ? -1 : Number(cachedLogoIndex)
+      currentDate: `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`,
+      title: cachedTitle || '',
+      currentLogoIndex: cachedLogoIndex === '' || cachedLogoIndex === null ? -1 : Number(cachedLogoIndex)
     });
     
-    // 如果有缓存的 Logo，需要同步更新 gridItems 中的 logo src
+    // 3. 如果有缓存Logo，则同步更新gridItems中的logo src
     if (this.data.currentLogoIndex !== -1) {
-      const logoSrc = this.data.logoList[this.data.currentLogoIndex];
-      this.setData({
-        \'gridItems[4].src\': logoSrc
-      });
+      this.updateLogoSrc(this.data.currentLogoIndex);
     }
 
+    // 4. 获取坑位物理位置
     setTimeout(() => { this.refreshSlotRects(); }, 300);
   },
+
+  // ===========================================
+  // Section: 核心拖拽交互 (Drag & Drop Engine)
+  // ===========================================
   
-  refreshSlotRects() {
-    wx.createSelectorQuery().selectAll(\'.grid-item\').boundingClientRect((rects) => {
-      this.setData({ slotRects: rects as IRect[] });
-    }).exec();
-  },
-
-  onTitleInput(e: WechatMiniprogram.Input) {
-    const newTitle = e.detail.value.trim();
-    this.setData({ title: newTitle });
-    wx.setStorageSync(\'daily_report_title\', newTitle); // 写入缓存
-  },
-
-  onBackTap() { wx.navigateBack({ delta: 1 }); },
-
   onDragStart(e: WechatMiniprogram.TouchEvent) {
     const index = e.currentTarget.dataset.index as number;
     const item = this.data.gridItems[index];
-    if (item.id === \'logo\' || !item.src) return;
+    if (item.id === 'logo' || !item.src) return;
 
     const touch = e.touches[0];
     this.setData({
@@ -96,7 +105,7 @@ Page({
     const moveDist = Math.hypot(touch.clientX - touchStartX, touch.clientY - touchStartY);
     if (moveDist > 15 && !this.data.isActuallyDragging) {
       this.setData({ isActuallyDragging: true });
-      wx.vibrateShort({ type: \'medium\' });
+      wx.vibrateShort({ type: 'medium' });
     }
     if (!this.data.isActuallyDragging) return;
 
@@ -106,7 +115,6 @@ Page({
 
     for (let i = 0; i < slotRects.length; i++) {
       if (i === 4) continue;
-
       const occupantIdx = gridItems.findIndex(it => it.slot === i);
       if (occupantIdx === draggingIndex) continue;
 
@@ -116,14 +124,18 @@ Page({
 
         const newList = [...gridItems];
         const targetRect = slotRects[currentSlotIndex];
-        const initialRect = slotRects[occupantIdx];
+        const initialRect = slotRects[i]; 
 
-        newList[occupantIdx].tx = targetRect.left - initialRect.left;
-        newList[occupantIdx].ty = targetRect.top - initialRect.top;
-        newList[occupantIdx].slot = currentSlotIndex;
+        const occupant = newList[occupantIdx];
+        if (occupant) {
+          occupant.tx = targetRect.left - initialRect.left;
+          occupant.ty = targetRect.top - initialRect.top;
+          occupant.slot = currentSlotIndex;
+        }
+        
         newList[draggingIndex].slot = i;
 
-        wx.vibrateShort({ type: \'light\' });
+        wx.vibrateShort({ type: 'light' });
         this.setData({ gridItems: newList });
         break;
       }
@@ -146,17 +158,16 @@ Page({
     this.checkHasEmptySlot();
   },
 
-  checkHasEmptySlot() {
-    const hasEmpty = this.data.gridItems.some(it => it.id !== \'logo\' && !it.src);
-    this.setData({ hasEmptySlot: hasEmpty });
-  },
+  // ===========================================
+  // Section: 图片与Logo处理
+  // ===========================================
 
   onGridItemTap(e: WechatMiniprogram.TouchEvent) {
     if (this.data.isActuallyDragging) return;
     const index = e.currentTarget.dataset.index as number;
     const item = this.data.gridItems[index];
 
-    if (item.id === \'logo\') {
+    if (item.id === 'logo') {
       this.setData({ showLogoPicker: true });
       return;
     }
@@ -165,8 +176,8 @@ Page({
 
     wx.chooseImage({
       count: 1,
-      sizeType: [\'compressed\'],
-      sourceType: [\'album\', \'camera\'],
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
       success: (res) => {
         this.setData({
           [`gridItems[${index}].src`]: res.tempFilePaths[0]
@@ -177,20 +188,20 @@ Page({
   },
 
   chooseImages() {
-    const emptySlotsCount = this.data.gridItems.filter(it => it.id !== \'logo\' && !it.src).length;
+    const emptySlotsCount = this.data.gridItems.filter(it => it.id !== 'logo' && !it.src).length;
     if (emptySlotsCount === 0) return;
 
     wx.chooseMedia({
       count: emptySlotsCount,
-      mediaType: [\'image\'],
-      sizeType: [\'compressed\'],
-      sourceType: [\'album\', \'camera\'],
+      mediaType: ['image'],
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
       success: (res) => {
         const paths = res.tempFiles.map(f => f.tempFilePath);
         const newList = [...this.data.gridItems];
         let pathIndex = 0;
         newList.forEach(item => {
-          if (item.id !== \'logo\' && !item.src && paths[pathIndex]) {
+          if (item.id !== 'logo' && !item.src && pathIndex < paths.length) {
             item.src = paths[pathIndex];
             pathIndex++;
           }
@@ -206,54 +217,64 @@ Page({
     const index = this.data.gridItems.findIndex(it => it.id === id);
     if (index !== -1) {
       this.setData({
-        [`gridItems[${index}].src`]: \'\'
+        [`gridItems[${index}].src`]: ''
       });
       this.checkHasEmptySlot();
     }
   },
 
-  closeLogoPicker() { this.setData({ showLogoPicker: false }); },
-  
   selectLogo(e: WechatMiniprogram.TouchEvent) { 
     const logoIndex = e.currentTarget.dataset.logoIndex as number;
-    const logoSrc = this.data.logoList[logoIndex];
-    
     this.setData({ 
       currentLogoIndex: logoIndex, 
       showLogoPicker: false,
-      \'gridItems[4].src\': logoSrc // 直接更新九宫格数据源，修复白屏
     });
-    
-    wx.setStorageSync(\'daily_report_logo_index\', logoIndex); // 写入缓存
+    this.updateLogoSrc(logoIndex);
+    wx.setStorageSync('daily_report_logo_index', logoIndex);
+  },
+  
+  updateLogoSrc(logoIndex: number) {
+    if (logoIndex < 0 || logoIndex >= this.data.logoList.length) return;
+    const logoSrc = this.data.logoList[logoIndex];
+    this.setData({ 'gridItems[4].src': logoSrc });
   },
 
+  // ===========================================
+  // Section: Canvas 图片合成与保存
+  // ===========================================
+
   async saveGridImage() {
-    // BUG 4 修复：增加保存前置校验
+    // 1. 前置校验
     if (!this.data.title) {
-      return wx.showToast({ title: \'请输入标题\', icon: \'none\' });
+      return wx.showToast({ title: '请输入标题', icon: 'none' });
     }
     if (this.data.currentLogoIndex === -1) {
-      return wx.showToast({ title: \'请选择一个Logo\', icon: \'none\' });
+      return wx.showToast({ title: '请选择一个Logo', icon: 'none' });
     }
-    if (this.data.gridItems.some(it => it.id !== \'logo\' && !it.src)) {
-      return wx.showToast({ title: \'请先填满所有图片格子\', icon: \'none\' });
+    if (this.data.gridItems.some(it => it.id !== 'logo' && !it.src)) {
+      return wx.showToast({ title: '请先填满所有图片格子', icon: 'none' });
     }
 
+    // 2. 权限请求
     const authorized = await checkAndRequestPhotosAlbumScope();
     if (!authorized) return;
 
-    wx.showLoading({ title: \'图片生成中...\', mask: true });
+    wx.showLoading({ title: '图片生成中...', mask: true });
 
+    // 3. 执行合成与保存
     try {
       const tempFilePath = await this.doImageSynthesis();
       wx.saveImageToPhotosAlbum({
         filePath: tempFilePath,
-        success: () => wx.showToast({ title: \'已保存至相册\', icon: \'success\' }),
-        fail: () => wx.showToast({ title: \'保存失败\', icon: \'none\' })\
+        success: () => wx.showToast({ title: '已保存至相册', icon: 'success' }),
+        fail: (err) => {
+          console.error("保存失败: ", err);
+          wx.showToast({ title: '保存失败', icon: 'none' });
+        }
       });
     } catch (err) {
-      console.error(\'图片合成失败\', err);
-      wx.showToast({ title: \'图片合成失败，请稍后重试\', icon: \'none\' });
+      console.error('图片合成失败', err);
+      wx.showToast({ title: '图片合成失败，请重试', icon: 'none' });
     } finally {
       wx.hideLoading();
     }
@@ -262,86 +283,68 @@ Page({
   doImageSynthesis(): Promise<string> {
     return new Promise((resolve, reject) => {
       const query = this.createSelectorQuery();
-      query.select(\'#gridCanvas\').fields({ node: true, size: true }).exec(async (res) => {
-        if (!res[0] || !res[0].node) return reject(new Error(\'获取Canvas节点失败\'));
-
+      query.select('#gridCanvas').fields({ node: true, size: true }).exec(async (res) => {
+        if (!res[0] || !res[0].node) return reject(new Error('获取Canvas节点失败'));
         const canvas = res[0].node as WechatMiniprogram.Canvas;
-        const ctx = canvas.getContext(\'2d\') as WechatMiniprogram.CanvasContext;
+        const ctx = canvas.getContext('2d') as WechatMiniprogram.CanvasContext;
 
         const dpr = wx.getSystemInfoSync().pixelRatio;
-        const W = 1242;
-        const gridW = 388;
-        const gridGap = 8;
-        const gridStartX = 31;
-        const gridStartY = 280;
+        const W = 1242, gridW = 388, gridGap = 8, gridStartX = 31, gridStartY = 280;
         const H = gridStartY + (gridW * 3 + gridGap * 2) + 200;
 
         canvas.width = W * dpr;
         canvas.height = H * dpr;
         ctx.scale(dpr, dpr);
 
-        ctx.fillStyle = \'#ffffff\';
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, W, H);
         
         const { title, currentDate, gridItems, currentLogoIndex, logoList } = this.data;
 
-        const drawCenterText = (text: string, font: string, color: string, y: number) => {
-          if (!text) return;
-          ctx.font = font;
-          ctx.fillStyle = color;
-          ctx.textAlign = \'center\';
-          ctx.textBaseline = \'top\';
-          ctx.fillText(text, W / 2, y);
-        };
+        // --- 绘制标题和日期 ---
+        this.drawCanvasText(ctx, title, 'bold 72px sans-serif', '#222222', W / 2, 100);
+        this.drawCanvasText(ctx, currentDate, 'bold 36px sans-serif', '#666666', W / 2, 200);
 
-        drawCenterText(title, \'bold 72px sans-serif\', \'#222222\', 100);
-        drawCenterText(currentDate, \'bold 36px sans-serif\', \'#666666\', 200);
-
-        const loadImage = (src: string): Promise<WechatMiniprogram.Image> => new Promise((r, j) => {
-          if (!src) return r(null as any);
+        // --- 异步加载所有图片 ---
+        const loadImage = (src: string): Promise<WechatMiniprogram.Image | null> => new Promise((r) => {
+          if (!src) return r(null);
           const img = canvas.createImage();
           img.src = src;
           img.onload = () => r(img);
-          img.onerror = j;
+          img.onerror = () => r(null); // 加载失败也返回 null
         });
 
         try {
-          const imagePromises = gridItems.map(item => loadImage(item.src));
+          const imagePromises = gridItems.map(item => {
+            // 【关键修复】确保合成时使用的是最新的、正确的 Logo src
+            const src = (item.id === 'logo') 
+                ? (currentLogoIndex !== -1 ? logoList[currentLogoIndex] : '') 
+                : item.src;
+            return loadImage(src);
+          });
           const images = await Promise.all(imagePromises);
 
-          for (let i = 0; i < 9; i++) {
-            const row = Math.floor(i / 3);
-            const col = i % 3;
+          // --- 绘制九宫格 ---
+          for (let i = 0; i < images.length; i++) {
+            const row = Math.floor(i / 3), col = i % 3;
             const x = gridStartX + col * (gridW + gridGap);
             const y = gridStartY + row * (gridW + gridGap);
             const img = images[i];
 
             if (img) {
-              const imgRatio = img.width / img.height;
-              const gridRatio = 1;
-              let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
-              if (imgRatio > gridRatio) {
-                sWidth = img.height * gridRatio;
-                sx = (img.width - sWidth) / 2;
-              } else {
-                sHeight = img.width / gridRatio;
-                sy = (img.height - sHeight) / 2;
-              }
-              ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, gridW, gridW);
+              this.drawAspectFillImage(ctx, img, x, y, gridW, gridW);
             } else {
-              ctx.fillStyle = \'#f8f8f8\';
+              ctx.fillStyle = '#f8f8f8';
               ctx.fillRect(x, y, gridW, gridW);
             }
           }
 
-          drawCenterText(\'专注您的生活\', \'bold 32px sans-serif\', \'#666666\', H - 125);
+          // --- 绘制底部 Slogan ---
+          this.drawCanvasText(ctx, '专注您的生活', 'bold 32px sans-serif', '#666666', W / 2, H - 125);
 
+          // --- 导出图片 ---
           setTimeout(() => {
-            wx.canvasToTempFilePath({
-              canvas,
-              success: (res) => resolve(res.tempFilePath),
-              fail: reject
-            });
+            wx.canvasToTempFilePath({ canvas, success: (res) => resolve(res.tempFilePath), fail: reject });
           }, 100);
 
         } catch (err) {
@@ -351,12 +354,59 @@ Page({
     });
   },
 
+  // ===========================================
+  // Section: 辅助函数 (Helper Functions)
+  // ===========================================
+
+  refreshSlotRects() {
+    wx.createSelectorQuery().selectAll('.grid-item').boundingClientRect((rects) => {
+      this.setData({ slotRects: rects as IRect[] });
+    }).exec();
+  },
+
+  checkHasEmptySlot() {
+    const hasEmpty = this.data.gridItems.some(it => it.id !== 'logo' && !it.src);
+    this.setData({ hasEmptySlot: hasEmpty });
+  },
+
+  drawCanvasText(ctx: WechatMiniprogram.CanvasContext, text: string, font: string, color: string, x: number, y: number) {
+    if (!text) return;
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText(text, x, y);
+  },
+
+  drawAspectFillImage(ctx: WechatMiniprogram.CanvasContext, img: WechatMiniprogram.Image, x: number, y: number, w: number, h: number) {
+    const imgRatio = img.width / img.height;
+    const canvasRatio = w / h;
+    let sx = 0, sy = 0, sWidth = img.width, sHeight = img.height;
+
+    if (imgRatio > canvasRatio) {
+      sWidth = img.height * canvasRatio;
+      sx = (img.width - sWidth) / 2;
+    } else {
+      sHeight = img.width / canvasRatio;
+      sy = (img.height - sHeight) / 2;
+    }
+    ctx.drawImage(img, sx, sy, sWidth, sHeight, x, y, w, h);
+  },
+
+  onTitleInput(e: WechatMiniprogram.Input) {
+    const newTitle = e.detail.value.trim();
+    this.setData({ title: newTitle });
+    wx.setStorageSync('daily_report_title', newTitle);
+  },
+  
+  closeLogoPicker() { this.setData({ showLogoPicker: false }); },
+  onBackTap() { wx.navigateBack({ delta: 1 }); },
   noop() { },
 
   onShareAppMessage() {
     return {
-      title: \'快来试试这个超好用的工作日报生成器！\',
-      path: \'/pages/index/index\'
+      title: '快来试试这个超好用的工作日报生成器！',
+      path: '/pages/index/index'
     };
   }
 });
